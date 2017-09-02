@@ -12,7 +12,7 @@ import org.jsoup.select.Elements;
  * Created by pipopa on 2017/08/30.
  */
 
-public class BookHunter {
+public class BookSearcher {
 
     public static Elements acquisition_element() throws IOException {
         int kscode = 34;
@@ -23,13 +23,13 @@ public class BookHunter {
         String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
 
         Document document = Jsoup.connect(url).userAgent(userAgent).get();
-        System.out.println(document.toString());
+        //System.out.println(document.toString());
         Elements elements = document.select(".slDet");
         return elements;
     }
 
-    public static ArrayList<Book> book_hunt() throws IOException {
-        Elements elements = BookHunter.acquisition_element();
+    public static ArrayList<Book> search_book() throws IOException {
+        Elements elements = acquisition_element();
         ArrayList<Book> books = new ArrayList<Book>();
         for (Element element : elements) {
             if (element.select(".tit_name") == null) {
@@ -38,7 +38,7 @@ public class BookHunter {
             String title_and_author[] = element.select("span.tit_name").text().split("/");
             String title = title_and_author[0];
             String author = title_and_author[1];
-            String publisher_and_release_date[] = element.select(".txt_crea").text().split(":")[1].split(",");
+            String publisher_and_release_date[] = element.select(".txt_crea").text().split(",");
             String publisher = publisher_and_release_date[0];
             ReleaseDate release_date = new ReleaseDate(publisher_and_release_date[1]);
             Book book = new Book(title, author, publisher, release_date);

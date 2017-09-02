@@ -1,5 +1,8 @@
 package com.example.pipopa.nibrary;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Created by pipopa on 2017/08/30.
  */
@@ -18,7 +21,15 @@ public class ReleaseDate {
         this.year = -1;
         this.month = -1;
 
-        String split_str[] = str.split(".");
+        Pattern p = Pattern.compile("\\d{4}(\\.\\d)?");
+        Matcher m = p.matcher(str);
+        if(!m.find()) {
+            return;
+        }
+
+        String matchstr = m.group();
+
+        String split_str[] = matchstr.split("\\.");
         this.year = Integer.valueOf(split_str[0]);
         if (split_str.length >= 2) {
             this.month = Integer.valueOf(split_str[1]);
@@ -43,6 +54,9 @@ public class ReleaseDate {
 
     @Override
     public String toString() {
-        return Integer.toString(this.year) + "/" + String.format("%02d", this.month);
+        String year = this.year != -1 ? Integer.toString(this.year) : "";
+        String month = this.month != -1 ? String.format("%02d", this.month) : "";
+        if(!month.isEmpty()) {month = "/" + month;}
+        return year + month;
     }
 }
