@@ -2,11 +2,16 @@ package com.example.pipopa.nibrary;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 
 /**
  * Created by pipopa on 2017/08/30.
@@ -14,36 +19,128 @@ import org.jsoup.select.Elements;
 
 public class BookSearcher {
 
-    public static Elements acquisition_element() throws IOException {
-        int kscode = 34;
-        String keyword = "vim";
-        String url = String.format(
-                "https://libopac3-c.nagaokaut.ac.jp/opac/opac_search/?kscode=0%d&lang=0&amode=2&appname=&version=&kywd=%s",
-                kscode, keyword);
-        String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
+    static String baseUrl = "https://libopac3-c.nagaokaut.ac.jp";
+    private Map<String, String> cookies;
+    private int kousenCode;
 
-        Document document = Jsoup.connect(url).userAgent(userAgent).get();
-        //System.out.println(document.toString());
-        Elements elements = document.select(".slDet");
-        return elements;
+    public BookSearcher(int kousenCode) {
+        String url = String.format(BookSearcher.baseUrl + "/opac/opac_search/?kscode=%03d", kousenCode);
+        Connection.Response res = null;
+        try {
+            res = Jsoup.connect(url).execute();
+        } catch (IOException e) {
+            // TODO 自動生成された catch ブロック
+            e.printStackTrace();
+            System.exit(1);
+        }
+        this.cookies = res.cookies();
+        this.kousenCode = kousenCode;
     }
 
-    public static ArrayList<Book> search_book() throws IOException {
-        Elements elements = acquisition_element();
-        ArrayList<Book> books = new ArrayList<Book>();
+    public ArrayList<Book> searchBook(String keyword) throws IOException {
+        Elements elements = acquisitionBookListElements(keyword);
+        ArrayList<Book> books = new ArrayList();
         for (Element element : elements) {
             if (element.select(".tit_name") == null) {
                 continue;
             }
-            String title_and_author[] = element.select("span.tit_name").text().split("/");
-            String title = title_and_author[0];
-            String author = title_and_author[1];
-            String publisher_and_release_date[] = element.select(".txt_crea").text().split(",");
-            String publisher = publisher_and_release_date[0];
-            ReleaseDate release_date = new ReleaseDate(publisher_and_release_date[1]);
-            Book book = new Book(title, author, publisher, release_date);
+
+            String bookUrl = element.select("a").first().attr("abs:href");
+            Book book = acquisitionBook(bookUrl);
+            confirmationLendingStatus(bookUrl);
             books.add(book);
         }
         return books;
+    }
+
+    public Elements acquisitionBookListElements(String keyword) throws IOException {
+        String url = String.format(
+                BookSearcher.baseUrl + "/opac/opac_search/?kscode=%03d&lang=0&amode=2&appname=&version=&kywd=%s",
+                this.kousenCode, keyword);
+        String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
+
+        Document document = Jsoup.connect(url).userAgent(userAgent).get();;
+        Elements elements = document.select(".slDet");
+        return elements;
+    }
+
+    public Book acquisitionBook(String url) {
+        String title = "";
+        String author = "";
+        String publisher = "";
+        ReleaseDate releaseDate;
+        boolean isLendable = false;
+
+        Document document = null;
+        try {
+            document = Jsoup.connect(url).cookies(this.cookies).get();
+        } catch (IOException e) {
+            // TODO 自動生成された catch ブロック
+            e.printStackTrace();
+            System.exit(1);
+        }
+        String titleAndAuthor[] = document.getElementsByClass("bb_ttl").first().text().split("/");
+        title = titleAndAuthor[0];
+        if (titleAndAuthor.length >= 2) {
+            author = titleAndAuthor[1];
+        }
+
+        publisher = document.getElementsByClass("PUBLISHER").first().select("span").text();
+        releaseDate = new ReleaseDate(document.getElementsByClass("PUBYEAR").select("span").text());
+        isLendable = confirmationLendingStatus(url);
+
+        Book book = new Book(title, author, publisher, releaseDate, isLendable);
+        return book;
+    }
+
+    public boolean confirmationLendingStatus(String detail_url) {
+        Document document;
+        try {
+            document = Jsoup.connect(detail_url).cookies(this.cookies).get();
+        } catch (IOException e) {
+            // TODO 自動生成された catch ブロック
+            e.printStackTrace();
+            return false;
+        }
+
+		/*
+		 * 貸出状況確認用のURLはページ内に dispStatName('/opac/opac_blstat/', '50', '1', '1',
+		 * 'BL8013737', '0', '1', '', '1', '0', '%E8%BF%94%E5%8D%B4%E6%9C%9F%E9%99%90',
+		 * 'waiting...'); というような形式で現れるのでカッコ内の文字を抜き出してURLの要素を取り出す。
+		 */
+        Pattern p = Pattern.compile("\\(.+?\\)"); // カッコ内の文字にマッチするパターン
+        Matcher m = p.matcher(document.select("td.CONDITION").first().getElementsByTag("script").html());
+        if (!m.find()) {
+            return false;
+        }
+        String url_parts[] = m.group().replace("(", "").replace("\'", "").replace(" ", "").split(",");
+        String staturl = buildUrl(url_parts[0], url_parts[1], url_parts[2], url_parts[3], url_parts[4], url_parts[5],
+                url_parts[6], url_parts[7], url_parts[8], url_parts[9], url_parts[10]);
+
+        try {
+            document = Jsoup.connect(BookSearcher.baseUrl + staturl).cookies(this.cookies).get();
+        } catch (IOException e) {
+            // TODO 自動生成された catch ブロック
+            e.printStackTrace();
+            return false;
+        }
+        //貸出されていない場合はhtmlは空なのでtrue, そうでない場合は貸出されているということなのでfalseが返る。
+        return document.select("body").first().html().equals("") ? true : false;
+    }
+
+    public String buildUrl(String url, String phasecd, String hldstat, String lkcd, String blipkey, String prlndflg,
+                           String blcd, String odrno, String bbcd, String lang, String addmsg) {
+        String staturl = url;
+        staturl = staturl + "?lang=" + lang;
+        staturl = staturl + "&amp;phasecd=" + phasecd;
+        staturl = staturl + "&amp;hldstat=" + hldstat;
+        staturl = staturl + "&amp;lkcd=" + lkcd;
+        staturl = staturl + "&amp;blipkey=" + blipkey;
+        staturl = staturl + "&amp;prlndflg=" + prlndflg;
+        staturl = staturl + "&amp;blcd=" + blcd;
+        staturl = staturl + "&amp;odrno=" + odrno;
+        staturl = staturl + "&amp;bbcd=" + bbcd;
+        staturl = staturl + "&amp;addmsg=" + addmsg;
+        return staturl;
     }
 }

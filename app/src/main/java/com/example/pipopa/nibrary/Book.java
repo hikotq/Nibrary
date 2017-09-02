@@ -10,17 +10,17 @@ public class Book {
     private String author;
     private String publisher;
     private ReleaseDate release_date;
+    private boolean isLendable;
 
 
 
-    Book(String title, String author, String publisher, ReleaseDate release_date){
+    Book(String title, String author, String publisher, ReleaseDate release_date, boolean isLendable){
         this.title = title;
         this.author = author;
         this.publisher = publisher;
         this.release_date = release_date;
+        this.isLendable = isLendable;
     }
-
-
 
     public long getId() {
         return id;
@@ -32,29 +32,20 @@ public class Book {
 
     public String getTitle() { return title;}
 
-    public void setTitle(String title) { this.title = title;}
-
     public String getAuthor() {
         return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
     }
 
     public String getPublisher() {
         return publisher;
     }
 
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
-    }
-
     public ReleaseDate getRelease_date() {
         return release_date;
     }
 
-    public void setRelease_date(ReleaseDate release_date) {
-        this.release_date = release_date;
+    public boolean isLendable() {
+        return isLendable;
     }
+
 }

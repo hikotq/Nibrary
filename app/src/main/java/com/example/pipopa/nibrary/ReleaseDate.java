@@ -27,9 +27,9 @@ public class ReleaseDate {
             return;
         }
 
-        String matchstr = m.group();
+        String match_str = m.group();
 
-        String split_str[] = matchstr.split("\\.");
+        String split_str[] = match_str.split("\\.");
         this.year = Integer.valueOf(split_str[0]);
         if (split_str.length >= 2) {
             this.month = Integer.valueOf(split_str[1]);
@@ -40,16 +40,8 @@ public class ReleaseDate {
         return year;
     }
 
-    public void setYear(int year) {
-        this.year = year;
-    }
-
     public int getMonth() {
         return month;
-    }
-
-    public void setMonth(int month) {
-        this.month = month;
     }
 
     @Override
