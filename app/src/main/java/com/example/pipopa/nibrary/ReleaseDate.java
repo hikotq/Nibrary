@@ -12,6 +12,11 @@ public class ReleaseDate {
     private int year;
     private int month;
 
+    public ReleaseDate() {
+        this.year = -1;
+        this.month = -1;
+    }
+
     public ReleaseDate(int year, int month) {
         this.year = year;
         this.month = month;
@@ -23,7 +28,7 @@ public class ReleaseDate {
 
         Pattern p = Pattern.compile("\\d{4}(\\.\\d)?");
         Matcher m = p.matcher(str);
-        if(!m.find()) {
+        if (!m.find()) {
             return;
         }
 
@@ -48,7 +53,9 @@ public class ReleaseDate {
     public String toString() {
         String year = this.year != -1 ? Integer.toString(this.year) : "";
         String month = this.month != -1 ? String.format("%02d", this.month) : "";
-        if(!month.isEmpty()) {month = "/" + month;}
+        if (!month.isEmpty()) {
+            month = "/" + month;
+        }
         return year + month;
     }
 }
