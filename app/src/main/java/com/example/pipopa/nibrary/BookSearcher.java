@@ -38,33 +38,49 @@ public class BookSearcher {
     }
 
     public ArrayList<Book> searchBook(String keyword) throws IOException {
-        Elements elements = acquisitionBookListElements(keyword);
-        ArrayList<Book> books = new ArrayList();
+        String title = "";
+        String author = "";
+        String publisher = "";
+        ReleaseDate releaseDate = new ReleaseDate();
+
+        Elements elements = fetchBookListElements(keyword);
+        ArrayList<Book> books = new ArrayList<>();
         for (Element element : elements) {
             if (element.select(".tit_name") == null) {
                 continue;
             }
 
+            String titleAndAuthor[] = element.select("span.tit_name").text().split("/");
+            title = titleAndAuthor[0];
+            title = titleAndAuthor[0];
+            if (titleAndAuthor.length >= 2) {
+                author = titleAndAuthor[1];
+            }
+            String publisherAndReleaseDate[] = element.select(".txt_crea").text().split(",");
+            publisher = publisherAndReleaseDate[0];
+            if (publisherAndReleaseDate.length >= 2) {
+                releaseDate = new ReleaseDate(publisherAndReleaseDate[1]);
+            }
             String bookUrl = element.select("a").first().attr("abs:href");
-            Book book = acquisitionBook(bookUrl);
-            confirmationLendingStatus(bookUrl);
+            Book book = new Book(title, author, publisher, releaseDate, bookUrl);
             books.add(book);
         }
         return books;
     }
 
-    public Elements acquisitionBookListElements(String keyword) throws IOException {
+    public Elements fetchBookListElements(String keyword) throws IOException {
         String url = String.format(
-                BookSearcher.baseUrl + "/opac/opac_search/?kscode=%03d&lang=0&amode=2&appname=&version=&kywd=%s",
+                BookSearcher.baseUrl + "/opac/opac_search/?kscode=%03d&lang=0&amode=2&appname=&version=&list_disp=100&kywd=%s",
                 this.kousenCode, keyword);
         String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
 
-        Document document = Jsoup.connect(url).userAgent(userAgent).get();;
+        Document document = Jsoup.connect(url).userAgent(userAgent).get();
+        ;
         Elements elements = document.select(".slDet");
         return elements;
     }
 
-    public Book acquisitionBook(String url) {
+    public Book takeBook(String url) {
         String title = "";
         String author = "";
         String publisher = "";
@@ -89,7 +105,7 @@ public class BookSearcher {
         releaseDate = new ReleaseDate(document.getElementsByClass("PUBYEAR").select("span").text());
         isLendable = confirmationLendingStatus(url);
 
-        Book book = new Book(title, author, publisher, releaseDate, isLendable);
+        Book book = new Book(title, author, publisher, releaseDate, url, isLendable);
         return book;
     }
 
@@ -104,7 +120,7 @@ public class BookSearcher {
         }
 
 		/*
-		 * 貸出状況確認用のURLはページ内に dispStatName('/opac/opac_blstat/', '50', '1', '1',
+         * 貸出状況確認用のURLはページ内に dispStatName('/opac/opac_blstat/', '50', '1', '1',
 		 * 'BL8013737', '0', '1', '', '1', '0', '%E8%BF%94%E5%8D%B4%E6%9C%9F%E9%99%90',
 		 * 'waiting...'); というような形式で現れるのでカッコ内の文字を抜き出してURLの要素を取り出す。
 		 */
@@ -113,9 +129,9 @@ public class BookSearcher {
         if (!m.find()) {
             return false;
         }
-        String url_parts[] = m.group().replace("(", "").replace("\'", "").replace(" ", "").split(",");
-        String staturl = buildUrl(url_parts[0], url_parts[1], url_parts[2], url_parts[3], url_parts[4], url_parts[5],
-                url_parts[6], url_parts[7], url_parts[8], url_parts[9], url_parts[10]);
+        String urlParts[] = m.group().replace("(", "").replace("\'", "").replace(" ", "").split(",");
+        String staturl = buildUrl(urlParts[0], urlParts[1], urlParts[2], urlParts[3], urlParts[4], urlParts[5],
+                urlParts[6], urlParts[7], urlParts[8], urlParts[9], urlParts[10]);
 
         try {
             document = Jsoup.connect(BookSearcher.baseUrl + staturl).cookies(this.cookies).get();

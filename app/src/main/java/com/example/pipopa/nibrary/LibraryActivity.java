@@ -1,6 +1,9 @@
 package com.example.pipopa.nibrary;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
@@ -17,12 +20,14 @@ import android.view.MenuItem;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.lang.Runnable;
 import java.io.IOException;
 
 public class LibraryActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     ListView listView;
+    BookAdapter bookAdapter;
     SearchView mSearchView;
 
     @Override
@@ -46,10 +51,7 @@ public class LibraryActivity extends AppCompatActivity
 
         listView = (ListView) findViewById(R.id.book_list);
         ArrayList<Book> bookList = new ArrayList<>();
-        ReleaseDate date = new ReleaseDate(2014, 2);
-        Book book = new Book("God of War", "Deus", "Val", date);
-        bookList.add(book);
-        BookAdapter bookAdapter = new BookAdapter(LibraryActivity.this);
+        bookAdapter = new BookAdapter(LibraryActivity.this);
         bookAdapter.setbookList(bookList);
         listView.setAdapter(bookAdapter);
     }
@@ -71,7 +73,36 @@ public class LibraryActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.search, menu);
         MenuItem searchItem = menu.findItem(R.id.menu_search);
         mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(final String s) {
+                new Thread(){
+                    @Override
+                    public void run() {
+                        BookSearcher bookSearcher = new BookSearcher(30);
+                        try {
+                            final ArrayList<Book> bookList = bookSearcher.searchBook(s);
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run(){
+                                    bookAdapter.refresh(bookList);
+                                }
+                            });
+                        } catch (IOException e) {
+                            // TODO 自動生成された catch ブロック
+                            e.printStackTrace();
+                            System.exit(1);
+                        }
 
+                    }
+                }.start();
+                return false;
+            }
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
         return true;
     }
 
@@ -97,7 +128,9 @@ public class LibraryActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            // Handle the camera action
+            Intent intent = new Intent(this, LibraryActivity.class);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {

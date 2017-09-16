@@ -48,9 +48,14 @@ public class BookAdapter extends BaseAdapter {
         convertView = layoutInflater.inflate(R.layout.book,parent,false);
         ((TextView)convertView.findViewById(R.id.title)).setText(bookList.get(position).getTitle());
         ((TextView)convertView.findViewById(R.id.author)).setText(bookList.get(position).getAuthor());
-        ((TextView)convertView.findViewById(R.id.publisher)).setText(bookList.get(position).getPublisher());
         ((TextView)convertView.findViewById(R.id.release_date)).setText(bookList.get(position).getRelease_date().toString());
         return convertView;
+    }
+
+    public void refresh(ArrayList<Book> bookList) {
+        this.bookList.clear();
+        this.bookList = (ArrayList<Book>) bookList.clone();
+        notifyDataSetChanged();
     }
 
 
