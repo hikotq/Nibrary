@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -54,6 +55,27 @@ public class LibraryActivity extends AppCompatActivity
         bookAdapter = new BookAdapter(LibraryActivity.this);
         bookAdapter.setbookList(bookList);
         listView.setAdapter(bookAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            public void onItemClick(AdapterView<?> parent, View v, final int position, long id) {
+                Book book = bookAdapter.getItem(position);
+                final String bookUrl = book.getBookUrl();
+
+                new Thread(){
+                    @Override
+                    public void run() {
+                        BookSearcher bookSearcher = new BookSearcher(30);
+                        
+                            final Book book = bookSearcher.takeBook(bookUrl);
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run(){
+                                    bookAdapter.updateBook(book, position);
+                                }
+                            });
+                    }
+                }.start();
+            }
+        });
     }
 
     @Override

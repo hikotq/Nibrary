@@ -22,7 +22,7 @@ public class Book {
         this.release_date = release_date;
         this.bookUrl = bookUrl;
         this.isLendable = false;
-        this.place = "情報科学";
+        this.place = "";
     }
 
     Book(String title, String author, String publisher, ReleaseDate release_date, String bookUrl, boolean isLendable, String place) {

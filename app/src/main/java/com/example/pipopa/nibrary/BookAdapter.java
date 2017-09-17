@@ -34,7 +34,7 @@ public class BookAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public Book getItem(int position) {
         return bookList.get(position);
     }
 
@@ -51,9 +51,14 @@ public class BookAdapter extends BaseAdapter {
         ((TextView)convertView.findViewById(R.id.release_date)).setText(bookList.get(position).getRelease_date().toString());
 
         String place = bookList.get(position).getPlace();
-        if(!place.isEmpty()) { place = "配下場所: " + place; }
+        if(!place.isEmpty()) { place = "配架場所: " + place; }
         ((TextView)convertView.findViewById(R.id.place)).setText(place);
         return convertView;
+    }
+
+    public void updateBook(Book book, final int position) {
+        this.bookList.set(position, book);
+        notifyDataSetChanged();
     }
 
     public void refresh(ArrayList<Book> bookList) {

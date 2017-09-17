@@ -80,11 +80,12 @@ public class BookSearcher {
     }
 
     public Book takeBook(String url) {
-        String title = "";
+        String title;
         String author = "";
-        String publisher = "";
+        String publisher;
         ReleaseDate releaseDate;
-        boolean isLendable = false;
+        boolean isLendable;
+        String location = "";
 
         Document document = null;
         try {
@@ -104,7 +105,12 @@ public class BookSearcher {
         releaseDate = new ReleaseDate(document.getElementsByClass("PUBYEAR").select("span").text());
         isLendable = confirmLendingStatus(url);
 
-        Book book = new Book(title, author, publisher, releaseDate, url, isLendable, "");
+        try {
+            location = document.getElementsByClass("LOCATION").get(1).text();
+        } catch (IndexOutOfBoundsException ignored) {
+        }
+
+        Book book = new Book(title, author, publisher, releaseDate, url, isLendable, location);
         return book;
     }
 
@@ -123,8 +129,15 @@ public class BookSearcher {
 		 * 'BL8013737', '0', '1', '', '1', '0', '%E8%BF%94%E5%8D%B4%E6%9C%9F%E9%99%90',
 		 * 'waiting...'); というような形式で現れるのでカッコ内の文字を抜き出してURLの要素を取り出す。
 		 */
+		String condition_html = "";
+		try {
+            condition_html = document.select("td.CONDITION").first().getElementsByTag("script").html();
+        } catch (java.lang.NullPointerException e) {
+            e.printStackTrace();
+            return false;
+        }
         Pattern p = Pattern.compile("\\(.+?\\)"); // カッコ内の文字にマッチするパターン
-        Matcher m = p.matcher(document.select("td.CONDITION").first().getElementsByTag("script").html());
+        Matcher m = p.matcher(condition_html);
         if (!m.find()) {
             return false;
         }
