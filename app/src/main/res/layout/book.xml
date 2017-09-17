@@ -42,6 +42,16 @@
         android:maxWidth="200dp"
         android:maxLines="1"
         />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="place"
+            android:id="@+id/place"
+            android:layout_below="@+id/author"
+            android:layout_alignLeft="@+id/title"
+            android:layout_marginLeft="4dp"
+            />
 
 </RelativeLayout>
 </LinearLayout>

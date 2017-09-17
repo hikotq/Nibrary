@@ -49,6 +49,10 @@ public class BookAdapter extends BaseAdapter {
         ((TextView)convertView.findViewById(R.id.title)).setText(bookList.get(position).getTitle());
         ((TextView)convertView.findViewById(R.id.author)).setText(bookList.get(position).getAuthor());
         ((TextView)convertView.findViewById(R.id.release_date)).setText(bookList.get(position).getRelease_date().toString());
+
+        String place = bookList.get(position).getPlace();
+        if(!place.isEmpty()) { place = "配下場所: " + place; }
+        ((TextView)convertView.findViewById(R.id.place)).setText(place);
         return convertView;
     }
 

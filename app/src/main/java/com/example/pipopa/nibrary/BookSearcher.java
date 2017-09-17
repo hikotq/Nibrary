@@ -52,7 +52,6 @@ public class BookSearcher {
 
             String titleAndAuthor[] = element.select("span.tit_name").text().split("/");
             title = titleAndAuthor[0];
-            title = titleAndAuthor[0];
             if (titleAndAuthor.length >= 2) {
                 author = titleAndAuthor[1];
             }
@@ -103,13 +102,13 @@ public class BookSearcher {
 
         publisher = document.getElementsByClass("PUBLISHER").first().select("span").text();
         releaseDate = new ReleaseDate(document.getElementsByClass("PUBYEAR").select("span").text());
-        isLendable = confirmationLendingStatus(url);
+        isLendable = confirmLendingStatus(url);
 
-        Book book = new Book(title, author, publisher, releaseDate, url, isLendable);
+        Book book = new Book(title, author, publisher, releaseDate, url, isLendable, "");
         return book;
     }
 
-    public boolean confirmationLendingStatus(String detail_url) {
+    public boolean confirmLendingStatus(String detail_url) {
         Document document;
         try {
             document = Jsoup.connect(detail_url).cookies(this.cookies).get();

@@ -11,7 +11,8 @@ public class Book {
     private String publisher;
     private ReleaseDate release_date;
     private String bookUrl;
-    private boolean isLendable = false;
+    private boolean isLendable;
+    private String place;
 
 
     Book(String title, String author, String publisher, ReleaseDate release_date, String bookUrl) {
@@ -20,15 +21,18 @@ public class Book {
         this.publisher = publisher;
         this.release_date = release_date;
         this.bookUrl = bookUrl;
+        this.isLendable = false;
+        this.place = "情報科学";
     }
 
-    Book(String title, String author, String publisher, ReleaseDate release_date, String bookUrl, boolean isLendable) {
+    Book(String title, String author, String publisher, ReleaseDate release_date, String bookUrl, boolean isLendable, String place) {
         this.title = title;
         this.author = author;
         this.publisher = publisher;
         this.release_date = release_date;
         this.bookUrl = bookUrl;
         this.isLendable = isLendable;
+        this.place = place;
     }
 
     public long getId() {
@@ -62,5 +66,7 @@ public class Book {
     public boolean isLendable() {
         return isLendable;
     }
+
+    public String getPlace() { return place; }
 
 }
