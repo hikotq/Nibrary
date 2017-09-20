@@ -39,8 +39,6 @@ public class LibraryActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
 
-
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -55,23 +53,23 @@ public class LibraryActivity extends AppCompatActivity
         bookAdapter = new BookAdapter(LibraryActivity.this);
         bookAdapter.setbookList(bookList);
         listView.setAdapter(bookAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, final int position, long id) {
                 Book book = bookAdapter.getItem(position);
                 final String bookUrl = book.getBookUrl();
 
-                new Thread(){
+                new Thread() {
                     @Override
                     public void run() {
                         BookSearcher bookSearcher = new BookSearcher(30);
-                        
-                            final Book book = bookSearcher.takeBook(bookUrl);
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run(){
-                                    bookAdapter.updateBook(book, position);
-                                }
-                            });
+
+                        final Book book = bookSearcher.takeBook(bookUrl);
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                bookAdapter.updateBook(book, position);
+                            }
+                        });
                     }
                 }.start();
             }
@@ -98,7 +96,7 @@ public class LibraryActivity extends AppCompatActivity
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(final String s) {
-                new Thread(){
+                new Thread() {
                     @Override
                     public void run() {
                         BookSearcher bookSearcher = new BookSearcher(30);
@@ -106,7 +104,7 @@ public class LibraryActivity extends AppCompatActivity
                             final ArrayList<Book> bookList = bookSearcher.searchBook(s);
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
-                                public void run(){
+                                public void run() {
                                     bookAdapter.refresh(bookList);
                                 }
                             });
@@ -120,6 +118,7 @@ public class LibraryActivity extends AppCompatActivity
                 }.start();
                 return false;
             }
+
             @Override
             public boolean onQueryTextChange(String s) {
                 return false;

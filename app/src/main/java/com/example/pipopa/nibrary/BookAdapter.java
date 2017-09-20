@@ -21,7 +21,7 @@ public class BookAdapter extends BaseAdapter {
 
     public BookAdapter(Context context) {
         this.context = context;
-        this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     public void setbookList(ArrayList<Book> bookList) {
@@ -45,14 +45,19 @@ public class BookAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        convertView = layoutInflater.inflate(R.layout.book,parent,false);
-        ((TextView)convertView.findViewById(R.id.title)).setText(bookList.get(position).getTitle());
-        ((TextView)convertView.findViewById(R.id.author)).setText(bookList.get(position).getAuthor());
-        ((TextView)convertView.findViewById(R.id.release_date)).setText(bookList.get(position).getRelease_date().toString());
+        convertView = layoutInflater.inflate(R.layout.book, parent, false);
+        ((TextView) convertView.findViewById(R.id.title)).setText(bookList.get(position).getTitle());
+        ((TextView) convertView.findViewById(R.id.author)).setText(bookList.get(position).getAuthor());
+        ((TextView) convertView.findViewById(R.id.release_date)).setText(bookList.get(position).getRelease_date().toString());
 
         String place = bookList.get(position).getPlace();
-        if(!place.isEmpty()) { place = "配架場所: " + place; }
-        ((TextView)convertView.findViewById(R.id.place)).setText(place);
+        if (!place.isEmpty()) {
+            place = "配架場所: " + place;
+            ((TextView) convertView.findViewById(R.id.place)).setText(place);
+        } else {
+            //配架場所が取得されてないときはViewを詰める
+            convertView.findViewById(R.id.place).setVisibility(View.GONE);
+        }
         return convertView;
     }
 

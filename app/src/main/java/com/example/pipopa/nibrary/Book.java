@@ -67,6 +67,8 @@ public class Book {
         return isLendable;
     }
 
-    public String getPlace() { return place; }
+    public String getPlace() {
+        return place;
+    }
 
 }
