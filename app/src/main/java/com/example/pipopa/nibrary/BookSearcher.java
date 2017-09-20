@@ -124,11 +124,11 @@ public class BookSearcher {
             return false;
         }
 
-		/*
-     * 貸出状況確認用のURLはページ内に dispStatName('/opac/opac_blstat/', '50', '1', '1',
-		 * 'BL8013737', '0', '1', '', '1', '0', '%E8%BF%94%E5%8D%B4%E6%9C%9F%E9%99%90',
-		 * 'waiting...'); というような形式で現れるのでカッコ内の文字を抜き出してURLの要素を取り出す。
-		 */
+        /*
+         * 貸出状況確認用のURLはページ内に dispStatName('/opac/opac_blstat/', '50', '1', '1',
+         * 'BL8013737', '0', '1', '', '1', '0', '%E8%BF%94%E5%8D%B4%E6%9C%9F%E9%99%90',
+         * 'waiting...'); というような形式で現れるのでカッコ内の文字を抜き出してURLの要素を取り出す。
+         */
         String condition_html = "";
         try {
             condition_html = document.select("td.CONDITION").first().getElementsByTag("script").html();
